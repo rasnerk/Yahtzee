@@ -2,6 +2,15 @@ class Yahtzee {
     constructor () {
         this.score = [];
         this.numberOfRolls = 0;
+        this.totalScore = [];
+        this.scoringSystem = {
+            "Full House": 25,
+            "Yahtzee": 50,
+            "Small Straight": 30,
+            "Large Straight": 40
+        }
+        this.totalGameScore = [];
+        this.btns = ["#start-game",'#roll-dice','#end-game']
     }
 
     startGame () {
@@ -19,7 +28,7 @@ class Yahtzee {
     // --- Clear HTML content & Reset Game variables --- //
     resetGame () {
         document.querySelector('.dice').innerHTML = "";
-        document.querySelector('.score').innerHTML = "";
+        document.querySelector('.message').innerHTML = "";
         this.score = []
         this.numberOfRolls = 0;
     }
@@ -27,7 +36,27 @@ class Yahtzee {
     // --- Need something to completely end the game --- //
     endGame () {
         const result = this.calculateFinalScore();
-        console.log(result)
+        setTimeout(() => {
+            document.querySelector('.message').innerText = result;
+        },1000)
+        this.totalGameScore.push(result);
+        if (this.totalGameScore.length === 6) {
+            this.btns.forEach( btn => {
+                let el = document.querySelector(btn);
+                el.setAttribute('disabled',true);
+            })
+            let total = this.totalGameScore.reduce( (a,b) => a + b);
+            setTimeout(() => {
+                document.querySelector('.message').innerText = `Congratulations you scored ${total}!`
+                this.totalGameScore = []
+            },1000)
+            setTimeout(() => {
+                this.btns.forEach( btn => {
+                    let el = document.querySelector(btn);
+                    el.removeAttribute('disabled')
+                })
+            },2000)
+        }
     }
 
     // --- Returns a random Die (number 1-6) --- //
@@ -50,7 +79,8 @@ class Yahtzee {
 
     reRollDice () {
         if (this.numberOfRolls === 3) {
-            alert("Game over Chum")
+            document.querySelector('.message').innerText = "Cannot Roll more than 3 times!"
+            // alert("Game over Chum")
             return;
         }
         this.numberOfRolls++
@@ -84,12 +114,21 @@ class Yahtzee {
         
         // --- Logic --- //
         // NEED to check for full house FIRST
-        if ( this.fullHouseChecker(this.score) ) return 'Full House';
+        if ( this.fullHouseChecker(this.score) ) {
+            document.querySelector('.message').innerText = "Full House!"
+            return this.scoringSystem['Full House'];
+        } 
         // Check for Trips-Yahtzee
-        if (tripsThroughYahtzee.length > 2 ) return this.helper(tripsThroughYahtzee.length);
+        if (tripsThroughYahtzee.length > 2 ) {
+            let temp = this.helper(tripsThroughYahtzee.length);
+            return temp === "Yahtzee" ? this.scoringSystem[temp] : sum; 
+        }
         // Check for Straight
         let straight = this.straightChecker(this.score);
-        if (straight) return straight; 
+        if (straight) {
+            document.querySelector('.message').innerText = `${straight}!`
+            return this.scoringSystem[straight];
+        } 
         // default return sum
         return sum;
     
@@ -135,15 +174,19 @@ class Yahtzee {
     }
 
     helper (num) {
+        let el = document.querySelector('.message');
         let result;
         switch(num) {
             case 3: 
+                el.innerText = "Trips!"
                 result = 'Trips'
                 break;
             case 4:
+                el.innerText = "Four of a Kind!"
                 result = "Quads" 
                 break;
             default: 
+                el.innerText = "Yahtzee!"
                 result = "Yahtzee"
         }
         return result;
