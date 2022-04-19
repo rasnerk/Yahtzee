@@ -4,9 +4,9 @@ class Yahtzee {
         this.numberOfRolls = 0;
     }
 
-    startGame () {}
+    startGame () { console.log('start game') }
 
-    rollDice () {}
+    rollDice () { console.log('roll dice') }
 
     createDiceImage () {}
 
