@@ -10,13 +10,16 @@ class Yahtzee {
             "Large Straight": 40
         }
         this.totalGameScore = [];
+        this.round = 0;
+        this.tableHand = document.querySelector('#table-hand')
         this.btns = ["#start-game",'#roll-dice','#end-game']
     }
 
     startGame () {
         this.resetGame();
         // --- Update number of rolls --- //
-        this.numberOfRolls++;
+        this.numberOfRolls ++;
+        this.round ++;
         // --- Roll 5 Die --- //
         for (let i=0; i<5; i++) {
             this.score.push( this.rollDice() );
@@ -27,6 +30,12 @@ class Yahtzee {
 
     // --- Clear HTML content & Reset Game variables --- //
     resetGame () {
+        if (this.round === 6) {
+            this.round = 0;
+            for (let i=1; i<this.tableHand.children.length; i++) {
+                this.tableHand.children[i].innerText = '';
+            }
+        }
         document.querySelector('.dice').innerHTML = "";
         document.querySelector('.message').innerHTML = "";
         this.score = []
@@ -35,12 +44,17 @@ class Yahtzee {
 
     // --- Need something to completely end the game --- //
     endGame () {
+        let tableScore = document.querySelector('#table-score');
+
         const result = this.calculateFinalScore();
+        tableScore.children[this.round].innerText = result;
+        
         setTimeout(() => {
-            document.querySelector('.message').innerText = result;
+            document.querySelector('.message').innerText = `+${result}`;
         },1000)
         this.totalGameScore.push(result);
         if (this.totalGameScore.length === 6) {
+            // this.round = 0;
             this.btns.forEach( btn => {
                 let el = document.querySelector(btn);
                 el.setAttribute('disabled',true);
@@ -108,6 +122,7 @@ class Yahtzee {
         this.score.sort((a,b) => a - b)
         
         // --- Variables --- //
+        // let tableHand = document.querySelector('#table-hand');
         const sum = this.score.reduce((a,b) => a + b);
         const findDuplicates = this.score.filter( (item, index) => this.score.indexOf(item) !== index );
         const tripsThroughYahtzee = this.score.filter( num => num === findDuplicates[0] );
@@ -116,6 +131,7 @@ class Yahtzee {
         // NEED to check for full house FIRST
         if ( this.fullHouseChecker(this.score) ) {
             document.querySelector('.message').innerText = "Full House!"
+            this.tableHand.children[this.round].innerText = 'Full House'
             return this.scoringSystem['Full House'];
         } 
         // Check for Trips-Yahtzee
@@ -127,6 +143,7 @@ class Yahtzee {
         let straight = this.straightChecker(this.score);
         if (straight) {
             document.querySelector('.message').innerText = `${straight}!`
+            this.tableHand.children[this.round].innerText = `${straight}`
             return this.scoringSystem[straight];
         } 
         // default return sum
@@ -179,14 +196,17 @@ class Yahtzee {
         switch(num) {
             case 3: 
                 el.innerText = "Trips!"
+                this.tableHand.children[this.round].innerText = "Trips"
                 result = 'Trips'
                 break;
             case 4:
                 el.innerText = "Four of a Kind!"
+                this.tableHand.children[this.round].innerText = "Four of a Kind"
                 result = "Quads" 
                 break;
             default: 
                 el.innerText = "Yahtzee!"
+                this.tableHand.children[this.round].innerText = "Yahtzee"
                 result = "Yahtzee"
         }
         return result;
